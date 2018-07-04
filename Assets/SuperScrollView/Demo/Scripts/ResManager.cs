@@ -66,21 +66,6 @@ namespace SuperScrollView
                     fileurl = array[i].Substring(0, array[i].Length - 1);
                 }
                 urlList.Add(fileurl);
-
-                /*
-                string[] filename = fileurl.Split('/');
-                string filepath = "C:/Users/user/Desktop/" + filename[filename.Length - 1];
-                if (!filepath.EndsWith("g"))
-                {
-                    Debug.Log(i);
-                    filepath = filepath.Substring(0, filepath.Length - 1);
-                }
-                pathList.Add(filepath);
-                */
-
-                //MyThread mt = new MyThread(urlList[i], pathList[i]);
-                //Thread thread = new Thread(new ThreadStart(mt.DownLoadImage));
-                //thread.Start();
             }
         }
 

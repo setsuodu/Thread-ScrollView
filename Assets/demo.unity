@@ -184,7 +184,7 @@ MonoBehaviour:
     rgba: 4292335575
   mContentRootObj: {fileID: 0}
   mLoopListView: {fileID: 0}
-  placeholder: {fileID: 21300000, guid: 806cf96823cca43fe8045248d013964e, type: 3}
+  placeholder: {fileID: 21300000, guid: 1e9927c2312cbfc4c98ff0c6fd3bdb52, type: 3}
 --- !u!114 &10775352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1337,7 +1337,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: 806cf96823cca43fe8045248d013964e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1e9927c2312cbfc4c98ff0c6fd3bdb52, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1975,7 +1975,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baf8d7f948c888c45af61fc5a21551c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: -200
 --- !u!1 &1631227809
 GameObject:
   m_ObjectHideFlags: 0
@@ -2506,7 +2505,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baf8d7f948c888c45af61fc5a21551c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: -200
 --- !u!114 &2061953087
 MonoBehaviour:
   m_ObjectHideFlags: 0
