@@ -14,7 +14,6 @@ namespace SuperScrollView
         RightBottom,
     }
 
-
     public enum ListItemArrangeType
     {
         TopToBottom,
@@ -131,6 +130,7 @@ namespace SuperScrollView
             mTmpPooledItemList.Clear();
         }
     }
+
     [System.Serializable]
     public class ItemPrefabConfData
     {
@@ -139,7 +139,6 @@ namespace SuperScrollView
         public int mInitCreateCount = 0;
         public float mStartPosOffset = 0;
     }
-
 
     public class LoopListViewInitParam
     {
@@ -166,12 +165,9 @@ namespace SuperScrollView
         SnapMoving = 2,
         SnapMoveFinish = 3
     }
-    
-
 
     public class LoopListView2 : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
-
         class SnapData
         {
             public SnapStatus mSnapStatus = SnapStatus.NoTargetSet;
@@ -230,7 +226,6 @@ namespace SuperScrollView
         float mSnapVecThreshold = 145;
         [SerializeField]
         bool mItemSnapEnable = false;
-
 
         Vector3 mLastFrameContainerPos = Vector3.zero;
         public System.Action<LoopListView2,LoopListViewItem2> mOnSnapItemFinished = null;
@@ -455,7 +450,6 @@ namespace SuperScrollView
             ForceSnapUpdateCheck();
         }
 
-
         /*
         This method may use to set the item total count of the scrollview at runtime. 
         If this parameter is set -1, then means there are infinite items,
@@ -524,12 +518,17 @@ namespace SuperScrollView
             int count = mItemList.Count;
             if (count == 0)
             {
+                Debug.Log("count == 0");
                 return null;
             }
+
+            // 10 < 0 || 10 > 9
             if (itemIndex < mItemList[0].ItemIndex || itemIndex > mItemList[count - 1].ItemIndex)
             {
+                //Debug.Log(itemIndex + " : " + mItemList[0].ItemIndex + " : " + mItemList[count - 1].ItemIndex);
                 return null;
             }
+
             int i = itemIndex - mItemList[0].ItemIndex;
             return mItemList[i];
         }
@@ -561,11 +560,11 @@ namespace SuperScrollView
         {
             get { return mViewPortRectTransform.rect.width; }
         }
+
         public float ViewPortHeight
         {
             get { return mViewPortRectTransform.rect.height; }
         }
-
 
         /*
          All visible items is stored in a List<LoopListViewItem2> , which is named mItemList;
@@ -607,7 +606,6 @@ namespace SuperScrollView
             return -1;
         }
 
-
         public void DoActionForEachShownItem(System.Action<LoopListViewItem2,object> action,object param)
         {
             if(action == null)
@@ -624,7 +622,6 @@ namespace SuperScrollView
                 action(mItemList[i],param);
             }
         }
-
 
         public LoopListViewItem2 NewListViewItem(string itemPrefabName)
         {
@@ -668,7 +665,6 @@ namespace SuperScrollView
             UpdateContentSize();
             UpdateAllShownItemsPos();
         }
-
 
         /*
         To update a item by itemIndex.if the itemIndex-th item is not visible, then this method will do nothing.
@@ -821,9 +817,9 @@ namespace SuperScrollView
             {
                 return;
             }
+            //Debug.Log(count + " | " + mItemList[0].ItemIndex);
             RefreshAllShownItemWithFirstIndex(mItemList[0].ItemIndex);
         }
-
 
         public void RefreshAllShownItemWithFirstIndex(int firstItemIndex)
         {
@@ -871,7 +867,6 @@ namespace SuperScrollView
             ClearAllTmpRecycledItem();
         }
 
-
         public void RefreshAllShownItemWithFirstIndexAndPos(int firstItemIndex,Vector3 pos)
         {
             RecycleAllItem();
@@ -907,7 +902,6 @@ namespace SuperScrollView
             ClearAllTmpRecycledItem();
         }
 
-
         void RecycleItemTmp(LoopListViewItem2 item)
         {
             if (item == null)
@@ -927,7 +921,6 @@ namespace SuperScrollView
 
         }
 
-
         void ClearAllTmpRecycledItem()
         {
             int count = mItemPoolList.Count;
@@ -937,7 +930,6 @@ namespace SuperScrollView
             }
         }
 
-
         void RecycleAllItem()
         {
             foreach (LoopListViewItem2 item in mItemList)
@@ -946,7 +938,6 @@ namespace SuperScrollView
             }
             mItemList.Clear();
         }
-
 
         void AdjustContainerPivot(RectTransform rtf)
         {
@@ -969,7 +960,6 @@ namespace SuperScrollView
             }
             rtf.pivot = pivot;
         }
-
 
         void AdjustPivot(RectTransform rtf)
         {
@@ -1021,7 +1011,6 @@ namespace SuperScrollView
             rtf.anchorMin = anchorMin;
             rtf.anchorMax = anchorMax;
         }
-
 
         void AdjustAnchor(RectTransform rtf)
         {
@@ -1085,8 +1074,6 @@ namespace SuperScrollView
                 mItemPoolList.Add(pool);
             }
         }
-
-
 
         public virtual void OnBeginDrag(PointerEventData eventData)
         {
@@ -1163,7 +1150,6 @@ namespace SuperScrollView
             return newItem;
         }
 
-
         void SetItemSize(int itemIndex, float itemSize,float padding)
         {
             mItemPosMgr.SetItemSize(itemIndex, itemSize+padding);
@@ -1179,19 +1165,16 @@ namespace SuperScrollView
             mItemPosMgr.GetItemIndexAndPosAtGivenPos(pos, ref index, ref itemPos);
         }
 
-
         float GetItemPos(int itemIndex)
         {
             return mItemPosMgr.GetItemPos(itemIndex);
         }
-
       
         public Vector3 GetItemCornerPosInViewPort(LoopListViewItem2 item, ItemCornerEnum corner = ItemCornerEnum.LeftBottom)
         {
             item.CachedRectTransform.GetWorldCorners(mItemWorldCorners);
             return mViewPortRectTransform.InverseTransformPoint(mItemWorldCorners[(int)corner]);
         }
-       
 
         void AdjustPanelPos()
         {
@@ -1352,7 +1335,6 @@ namespace SuperScrollView
 
         }
 
-
         void Update()
         {
             if(mListViewInited == false)
@@ -1404,8 +1386,6 @@ namespace SuperScrollView
                 UpdateSnapHorizontal(immediate);
             }
         }
-
-
 
         public void UpdateAllShownItemSnapData()
         {
@@ -1498,8 +1478,6 @@ namespace SuperScrollView
                 }
             }
         }
-
-
 
         void UpdateSnapVertical(bool immediate = false)
         {
@@ -1662,7 +1640,6 @@ namespace SuperScrollView
             }
 
         }
-
 
         void UpdateCurSnapData()
         {
@@ -1987,8 +1964,6 @@ namespace SuperScrollView
             return true;
         }
 
-
-
         public void UpdateListView(float distanceForRecycle0, float distanceForRecycle1, float distanceForNew0, float distanceForNew1)
         {
             mListUpdateCheckFrameCount++;
@@ -2026,8 +2001,6 @@ namespace SuperScrollView
             }
 
         }
-
-
 
         bool UpdateForVertList(float distanceForRecycle0,float distanceForRecycle1,float distanceForNew0, float distanceForNew1)
         {
@@ -2333,10 +2306,6 @@ namespace SuperScrollView
             return false;
 
         }
-
-
-
-
 
         bool UpdateForHorizontalList(float distanceForRecycle0, float distanceForRecycle1, float distanceForNew0, float distanceForNew1)
         {
@@ -2646,11 +2615,6 @@ namespace SuperScrollView
 
         }
 
-
-
-
-
-
         float GetContentPanelSize()
         {
             if (mSupportScrollBar)
@@ -2683,7 +2647,6 @@ namespace SuperScrollView
             s += mItemList[count - 1].ItemSize;
             return s;
         }
-
 
         void CheckIfNeedUpdataItemPos()
         {
@@ -2761,7 +2724,6 @@ namespace SuperScrollView
             }
 
         }
-
 
         void UpdateAllShownItemsPos()
         {
@@ -2876,6 +2838,7 @@ namespace SuperScrollView
                 mNeedAdjustVec = true;
             }
         }
+
         void UpdateContentSize()
         {
             float size = GetContentPanelSize();
@@ -2895,5 +2858,4 @@ namespace SuperScrollView
             }
         }
     }
-
 }

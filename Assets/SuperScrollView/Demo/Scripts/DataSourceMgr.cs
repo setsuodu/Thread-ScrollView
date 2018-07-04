@@ -26,7 +26,7 @@ namespace SuperScrollView
         float mDataLoadLeftTime = 0;
         bool mIsWaittingRefreshData = false;
         bool mIsWaitLoadingMoreData = false;
-        public int mTotalDataCount = 10000;
+        public int mTotalDataCount = 10;
 
         static DataSourceMgr instance = null;
 

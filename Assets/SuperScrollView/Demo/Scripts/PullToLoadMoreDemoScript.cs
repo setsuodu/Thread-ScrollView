@@ -81,7 +81,6 @@ namespace SuperScrollView
             {
                 itemScript0.mRoot.SetActive(false);
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 0);
-                //Debug.Log("1->0");
             }
             else if (mLoadingTipStatus == LoadingTipStatus.WaitReleasePush)
             {
@@ -90,7 +89,6 @@ namespace SuperScrollView
                 itemScript0.mArrow.SetActive(true);
                 itemScript0.mWaitingIcon.SetActive(false);
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mLoadingTipItemHeight);
-                //Debug.Log("2->" + mLoadingTipItemHeight);
             }
             else if (mLoadingTipStatus == LoadingTipStatus.WaitReleasePull)
             {
@@ -107,7 +105,14 @@ namespace SuperScrollView
                 itemScript0.mWaitingIcon.SetActive(true);
                 itemScript0.mText.text = "Loading ...";
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mLoadingTipItemHeight);
-                //Debug.Log("3->" + mLoadingTipItemHeight);
+            }
+            else if (mLoadingTipStatus == LoadingTipStatus.Loaded)
+            {
+                itemScript0.mRoot.SetActive(true);
+                itemScript0.mArrow.SetActive(false);
+                itemScript0.mWaitingIcon.SetActive(false);
+                itemScript0.mText.text = "Refreshed Success";
+                item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mLoadingTipItemHeight);
             }
         }
 
@@ -129,72 +134,81 @@ namespace SuperScrollView
                 return;
             }
 
-            // 加载更多
-            LoopListViewItem2 item = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount);
-            if (item != null)
+            ScrollRect sr = mLoopListView.ScrollRect;
+            Vector3 pos = sr.content.localPosition;
+            if (pos.y > 0)
             {
-                LoopListViewItem2 item1 = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount - 1);
-                if (item1 == null)
+                // 加载更多
+                LoopListViewItem2 item = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount); //最后一个prefab是否已经显示，可以开始加载更多
+                //Debug.Log(DataSourceMgr.Get.TotalItemCount + " -->> " + (mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount) != null));
+                if (item != null)
                 {
-                    return;
-                }
-
-                float y = mLoopListView.GetItemCornerPosInViewPort(item1, ItemCornerEnum.LeftBottom).y;
-                if (y + mLoopListView.ViewPortSize >= mLoadingTipItemHeight)
-                {
-                    if (mLoadingTipStatus != LoadingTipStatus.None)
+                    LoopListViewItem2 item1 = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount - 1);
+                    if (item1 == null)
                     {
+                        //Debug.Log("item1 == null");
                         return;
                     }
-                    mLoadingTipStatus = LoadingTipStatus.WaitReleasePush;
-                    UpdateLoadingTip(item);
-                }
-                else
-                {
-                    if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePush)
+
+                    float y = mLoopListView.GetItemCornerPosInViewPort(item1, ItemCornerEnum.LeftBottom).y;
+                    if (y + mLoopListView.ViewPortSize >= mLoadingTipItemHeight)
                     {
-                        Debug.Log("Draging ==>> RETURN");
-                        //return;
+                        if (mLoadingTipStatus != LoadingTipStatus.None)
+                        {
+                            return;
+                        }
+                        mLoadingTipStatus = LoadingTipStatus.WaitReleasePush;
+                        UpdateLoadingTip(item);
                     }
                     else
                     {
-                        mLoadingTipStatus = LoadingTipStatus.None;
-                        UpdateLoadingTip(item);
+                        if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePush)
+                        {
+                            //Debug.Log("Draging ==>> RETURN");
+                            //return;
+                        }
+                        else
+                        {
+                            mLoadingTipStatus = LoadingTipStatus.None;
+                            UpdateLoadingTip(item);
+                        }
                     }
+                }
+                else
+                {
+                    Debug.Log(DataSourceMgr.Get.TotalItemCount + " ==>> " + (mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount) != null));
                 }
             }
             else
             {
-                Debug.Log("Draging ==>> NULL");
-            }
-
-            //下拉刷新
-            LoopListViewItem2 _item = mLoopListView.GetShownItemByItemIndex(0);
-            if (_item != null)
-            {
-                ScrollRect sr = mLoopListView.ScrollRect;
-                Vector3 pos = sr.content.localPosition;
-                if (pos.y < -mLoadingTipItemHeight)
+                //下拉刷新
+                LoopListViewItem2 _item = mLoopListView.GetShownItemByItemIndex(0);
+                if (_item != null)
                 {
-                    if (mLoadingTipStatus != LoadingTipStatus.None)
+                    //ScrollRect sr = mLoopListView.ScrollRect;
+                    //Vector3 pos = sr.content.localPosition;
+                    if (pos.y < -mLoadingTipItemHeight)
                     {
-                        return;
+                        if (mLoadingTipStatus != LoadingTipStatus.None)
+                        {
+                            return;
+                        }
+                        //Debug.Log("<<<<"); //刷新
+                        mLoadingTipStatus = LoadingTipStatus.WaitReleasePull;
+                        UpdateLoadingTip(_item);
+                        _item.CachedRectTransform.localPosition = new Vector3(0, mLoadingTipItemHeight, 0);
                     }
-                    //Debug.Log("<<<<"); //刷新
-                    mLoadingTipStatus = LoadingTipStatus.WaitReleasePull;
-                    UpdateLoadingTip(_item);
-                    _item.CachedRectTransform.localPosition = new Vector3(0, mLoadingTipItemHeight, 0);
-                }
-                else
-                {
-                    if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
+                    else
                     {
-                        return;
+                        if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
+                        {
+                            return;
+                        }
+                        //Debug.Log(">>>>"); //放弃
+                        mLoadingTipStatus = LoadingTipStatus.None;
+                        UpdateLoadingTip(_item);
+                        _item.CachedRectTransform.localPosition = new Vector3(0, 0, 0);
                     }
-                    //Debug.Log(">>>>"); //放弃
-                    mLoadingTipStatus = LoadingTipStatus.None;
-                    UpdateLoadingTip(_item);
-                    _item.CachedRectTransform.localPosition = new Vector3(0, 0, 0);
                 }
             }
         }
@@ -212,7 +226,6 @@ namespace SuperScrollView
                 return;
             }
 
-            ///*
             // 上拉加载
             LoopListViewItem2 item = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount);
             if (item != null)
@@ -220,22 +233,17 @@ namespace SuperScrollView
                 mLoopListView.OnItemSizeChanged(item.ItemIndex);
                 if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePush)
                 {
-                    Debug.Log("上拉 ==>> RETURN");
+                    //Debug.Log("上拉 ==>> RETURN");
                     //return;
                 }
                 else
                 {
-                    Debug.Log("上拉加载");
+                    //Debug.Log("上拉加载");
                     mLoadingTipStatus = LoadingTipStatus.WaitLoad;
                     UpdateLoadingTip(item);
                     DataSourceMgr.Get.RequestLoadMoreDataList(mLoadMoreCount, OnDataSourceLoadMoreFinished);
                 }
             }
-            else
-            {
-                Debug.Log("End ==>> NULL");
-            }
-            //*/
 
             // 下拉刷新
             LoopListViewItem2 _item = mLoopListView.GetShownItemByItemIndex(0);
@@ -244,12 +252,12 @@ namespace SuperScrollView
                 mLoopListView.OnItemSizeChanged(_item.ItemIndex);
                 if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
                 {
-                    Debug.Log("下拉 ==>> RETURN");
+                    //Debug.Log("下拉 ==>> RETURN");
                     //return;
                 }
                 else
                 {
-                    Debug.Log("下拉刷新");
+                    //Debug.Log("下拉刷新");
                     mLoadingTipStatus = LoadingTipStatus.WaitLoad;
                     UpdateLoadingTip(_item);
                     DataSourceMgr.Get.RequestRefreshDataList(OnDataSourceRefreshFinished);
@@ -267,7 +275,7 @@ namespace SuperScrollView
             if (mLoadingTipStatus == LoadingTipStatus.WaitLoad)
             {
                 mLoadingTipStatus = LoadingTipStatus.None;
-                Debug.Log(DataSourceMgr.Get.TotalItemCount + 1);
+                Debug.Log("加载更多 ==>> " + (DataSourceMgr.Get.TotalItemCount + 1)); //
                 mLoopListView.SetListItemCount(DataSourceMgr.Get.TotalItemCount + 1, false);
                 mLoopListView.RefreshAllShownItem();
             }
@@ -287,8 +295,10 @@ namespace SuperScrollView
                 LoopListViewItem2 item = mLoopListView.GetShownItemByItemIndex(0);
                 if (item == null)
                 {
+                    //Debug.Log("RETURN");
                     return;
                 }
+
                 UpdateLoadingTip(item);
                 mLoopListView.RefreshAllShownItem();
             }
@@ -300,6 +310,7 @@ namespace SuperScrollView
             {
                 return;
             }
+
             if (mLoadingTipStatus == LoadingTipStatus.Loaded)
             {
                 mDataLoadedTipShowLeftTime -= Time.deltaTime;
@@ -311,27 +322,15 @@ namespace SuperScrollView
                     {
                         return;
                     }
+
                     UpdateLoadingTip(item);
                     item.CachedRectTransform.localPosition = new Vector3(0, -mLoadingTipItemHeight, 0);
                     mLoopListView.OnItemSizeChanged(0);
+
+                    Debug.Log("OnItemSizeChanged 0");
+                    mLoopListView.SetListItemCount(DataSourceMgr.Get.TotalItemCount + 1, true);
                 }
             }
         }
-
-        /*
-        void OnJumpBtnClicked()
-        {
-            int itemIndex = 0;
-            if (int.TryParse(mScrollToInput.text, out itemIndex) == false)
-            {
-                return;
-            }
-            if (itemIndex < 0)
-            {
-                return;
-            }
-            mLoopListView.MovePanelToItemIndex(itemIndex, 0);
-        }
-        */
     }
 }
