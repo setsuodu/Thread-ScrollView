@@ -4,7 +4,6 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace SuperScrollView
 {
@@ -154,8 +153,13 @@ namespace SuperScrollView
 
         public void DownLoadImage()
         {
-            WebClient web = new WebClient();
-            web.DownloadFile(_url, _filePath);
+            if (!File.Exists(_filePath))
+            {
+                WebClient web = new WebClient();
+                web.DownloadFile(_url, _filePath);
+            }
+
+            // 本地加载
             ResManager.instance.bytesList.Add(SaveBytes(_filePath));
         }
 

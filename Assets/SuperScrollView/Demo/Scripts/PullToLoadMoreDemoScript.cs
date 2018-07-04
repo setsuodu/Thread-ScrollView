@@ -83,7 +83,7 @@ namespace SuperScrollView
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 0);
                 //Debug.Log("1->0");
             }
-            else if (mLoadingTipStatus == LoadingTipStatus.WaitRelease)
+            else if (mLoadingTipStatus == LoadingTipStatus.WaitReleasePush)
             {
                 itemScript0.mRoot.SetActive(true);
                 itemScript0.mText.text = "Release to Load More";
@@ -91,6 +91,14 @@ namespace SuperScrollView
                 itemScript0.mWaitingIcon.SetActive(false);
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mLoadingTipItemHeight);
                 //Debug.Log("2->" + mLoadingTipItemHeight);
+            }
+            else if (mLoadingTipStatus == LoadingTipStatus.WaitReleasePull)
+            {
+                itemScript0.mRoot.SetActive(true);
+                itemScript0.mText.text = "Release to Refresh";
+                itemScript0.mArrow.SetActive(true);
+                itemScript0.mWaitingIcon.SetActive(false);
+                item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mLoadingTipItemHeight);
             }
             else if (mLoadingTipStatus == LoadingTipStatus.WaitLoad)
             {
@@ -114,11 +122,13 @@ namespace SuperScrollView
             {
                 return;
             }
-            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+            if (mLoadingTipStatus != LoadingTipStatus.None
+                && mLoadingTipStatus != LoadingTipStatus.WaitReleasePush
+                && mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
             {
                 return;
             }
-            ///*
+
             // 加载更多
             LoopListViewItem2 item = mLoopListView.GetShownItemByItemIndex(DataSourceMgr.Get.TotalItemCount);
             if (item != null)
@@ -136,12 +146,12 @@ namespace SuperScrollView
                     {
                         return;
                     }
-                    mLoadingTipStatus = LoadingTipStatus.WaitRelease;
+                    mLoadingTipStatus = LoadingTipStatus.WaitReleasePush;
                     UpdateLoadingTip(item);
                 }
                 else
                 {
-                    if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+                    if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePush)
                     {
                         Debug.Log("Draging ==>> RETURN");
                         //return;
@@ -158,7 +168,6 @@ namespace SuperScrollView
                 Debug.Log("Draging ==>> NULL");
             }
 
-            /*
             //下拉刷新
             LoopListViewItem2 _item = mLoopListView.GetShownItemByItemIndex(0);
             if (_item != null)
@@ -172,13 +181,13 @@ namespace SuperScrollView
                         return;
                     }
                     //Debug.Log("<<<<"); //刷新
-                    mLoadingTipStatus = LoadingTipStatus.WaitRelease;
+                    mLoadingTipStatus = LoadingTipStatus.WaitReleasePull;
                     UpdateLoadingTip(_item);
                     _item.CachedRectTransform.localPosition = new Vector3(0, mLoadingTipItemHeight, 0);
                 }
                 else
                 {
-                    if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+                    if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
                     {
                         return;
                     }
@@ -188,7 +197,6 @@ namespace SuperScrollView
                     _item.CachedRectTransform.localPosition = new Vector3(0, 0, 0);
                 }
             }
-            */
         }
 
         void OnEndDrag()
@@ -197,7 +205,9 @@ namespace SuperScrollView
             {
                 return;
             }
-            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+            if (mLoadingTipStatus != LoadingTipStatus.None
+                && mLoadingTipStatus != LoadingTipStatus.WaitReleasePush
+                && mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
             {
                 return;
             }
@@ -208,7 +218,7 @@ namespace SuperScrollView
             if (item != null)
             {
                 mLoopListView.OnItemSizeChanged(item.ItemIndex);
-                if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+                if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePush)
                 {
                     Debug.Log("上拉 ==>> RETURN");
                     //return;
@@ -232,7 +242,7 @@ namespace SuperScrollView
             if (_item != null)
             {
                 mLoopListView.OnItemSizeChanged(_item.ItemIndex);
-                if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+                if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
                 {
                     Debug.Log("下拉 ==>> RETURN");
                     //return;

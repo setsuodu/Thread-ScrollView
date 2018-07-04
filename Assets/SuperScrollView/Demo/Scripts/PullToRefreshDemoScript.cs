@@ -8,7 +8,8 @@ namespace SuperScrollView
     enum LoadingTipStatus
     {
         None,
-        WaitRelease,
+        WaitReleasePush, //上推
+        WaitReleasePull, //下拉
         WaitLoad,
         Loaded,
     }
@@ -95,7 +96,7 @@ namespace SuperScrollView
                 itemScript0.mRoot.SetActive(false);
                 item.CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 0);
             }
-            else if (mLoadingTipStatus == LoadingTipStatus.WaitRelease)
+            else if (mLoadingTipStatus == LoadingTipStatus.WaitReleasePull)
             {
                 itemScript0.mRoot.SetActive(true);
                 itemScript0.mText.text = "Release to Refresh";
@@ -132,7 +133,7 @@ namespace SuperScrollView
             {
                 return;
             }
-            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
             {
                 return;
             }
@@ -153,13 +154,13 @@ namespace SuperScrollView
                     return;
                 }
                 Debug.Log("<<<<"); //刷新
-                mLoadingTipStatus = LoadingTipStatus.WaitRelease;
+                mLoadingTipStatus = LoadingTipStatus.WaitReleasePull;
                 UpdateLoadingTip(item);
                 item.CachedRectTransform.localPosition = new Vector3(0, mLoadingTipItemHeight, 0);
             }
             else
             {
-                if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+                if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
                 {
                     return;
                 }
@@ -176,7 +177,7 @@ namespace SuperScrollView
             {
                 return;
             }
-            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+            if (mLoadingTipStatus != LoadingTipStatus.None && mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
             {
                 return;
             }
@@ -187,7 +188,7 @@ namespace SuperScrollView
                 return;
             }
             mLoopListView.OnItemSizeChanged(item.ItemIndex);
-            if (mLoadingTipStatus != LoadingTipStatus.WaitRelease)
+            if (mLoadingTipStatus != LoadingTipStatus.WaitReleasePull)
             {
                 return;
             }
