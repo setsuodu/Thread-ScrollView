@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class DragScrollTopic : MonoBehaviour
 {
@@ -32,15 +33,5 @@ public class DragScrollTopic : MonoBehaviour
 			m_image.anchoredPosition = new Vector2(0, 300);
             m_image.localScale = Vector3.one;
 		}
-	}
-
-	public void OnDrag()
-	{
-		//Debug.Log("OnDrag -> " + m_scrollRect.content.anchoredPosition);
-	}
-
-	public void OnDrop()
-	{
-		//Debug.Log("OnDrop -> " + m_scrollRect.content.anchoredPosition);
 	}
 }
