@@ -1,8 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text;
 using System.Net;
+using System.Net.Security;
 using System.Threading;
+using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 namespace SuperScrollView
@@ -15,8 +20,19 @@ namespace SuperScrollView
 
         public List<string> urlList;
         public List<string> pathList;
-        public List<byte[]> bytesList = new List<byte[]>();
         public List<Sprite> spriteList = new List<Sprite>();
+
+        public List<byte[]> bytesList = new List<byte[]>();
+        //public Dictionary<string, byte[]> bytesDictionary = new Dictionary<string, byte[]>();
+
+        Thread thread;
+        private string outputFolder
+        {
+            get
+            {
+                return "C:/Users/user/Desktop/";
+            }
+        }
 
         void Awake()
         {
@@ -29,6 +45,9 @@ namespace SuperScrollView
             if (bytesList.Count > 0)
             {
                 Texture2D t2d = new Texture2D(128, 128);
+
+                Debug.Log(bytesList.Count + "|" + bytesList[0].Length);
+
                 t2d.LoadImage(bytesList[0]);
                 t2d.Apply();
 
@@ -55,16 +74,12 @@ namespace SuperScrollView
         {
             spriteObjDict.Clear();
 
-            TextAsset asset = Resources.Load<TextAsset>("list");
-            string content = asset.text;
-            string[] array = content.Split('\n');
-            for (int i = 0; i < array.Length; i++)
+            string baseUrl = @"https://download.setsuodu.com/Pokemon Models/";
+            DownloadList downloadList = Resources.Load<DownloadList>("DownloadList");
+            //Debug.Log(downloadList.list.Count);
+            for (int i = 0; i < downloadList.list.Count; i++)
             {
-                string fileurl = array[i];
-                if (!fileurl.EndsWith("g"))
-                {
-                    fileurl = array[i].Substring(0, array[i].Length - 1);
-                }
+                string fileurl = baseUrl + downloadList.list[i].filename;
                 urlList.Add(fileurl);
             }
         }
@@ -107,20 +122,77 @@ namespace SuperScrollView
                 return "";
             }
 
-            string[] filename = urlList[index].Split('/');
-            string filepath = "C:/Users/user/Desktop/" + filename[filename.Length - 1];
-            if (!filepath.EndsWith("g"))
-            {
-                filepath = filepath.Substring(0, filepath.Length - 1);
-            }
+            string url = urlList[index];
+            long fileSize = GetLength(url); //必须运行
+            //Debug.Log(fileSize);
+
+            string[] filename = url.Split('/');
+            string filepath = Path.Combine(outputFolder, filename[filename.Length - 1]);
             pathList.Add(filepath);
 
-            //Debug.Log(urlList[index] + "\n" + pathList[index]);
-            MyThread mt = new MyThread(urlList[index], pathList[index]);
+            //Debug.Log(url + "\n" + pathList[index]);
+            MyThread mt = new MyThread(url, pathList[index], OnProgressChanged, OnCompleted);
             Thread thread = new Thread(new ThreadStart(mt.DownLoadImage));
             thread.Start();
+            //Debug.Log("saved in: " + filepath);
 
             return urlList[index];
+        }
+
+        void OnProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            string progress = string.Format("正在下载文件，完成进度{0}%  {1}/{2}(字节)", e.ProgressPercentage, e.BytesReceived, e.TotalBytesToReceive);
+            //Debug.Log(progress);
+        }
+
+        void OnCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            Debug.Log("主线程完成");
+        }
+        
+        public void LoadImage(string hash)
+        {
+            Debug.Log("LoadImage > " + hash);
+
+            /*
+            if (bytesList.Count > 0)
+            {
+                Texture2D t2d = new Texture2D(128, 128);
+
+                Debug.Log(bytesList.Count + "|" + bytesList[0].Length);
+
+                t2d.LoadImage(bytesList[0]);
+                t2d.Apply();
+
+                Sprite sp = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+                spriteList.Add(sp);
+
+                bytesList.RemoveAt(0);
+            }
+            */
+        }
+
+        // 获取下载文件的大小
+        public static long GetLength(string url)
+        {
+            //HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
+            request.Method = "HEAD";
+
+            //如果是发送HTTPS请求
+            if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+                request.ProtocolVersion = HttpVersion.Version10;
+            }
+
+            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+            return response.ContentLength;
+        }
+
+        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        {
+            return true; //总是接受
         }
     }
 
@@ -128,37 +200,89 @@ namespace SuperScrollView
     {
         public string _url;
         public string _filePath;
-        public Texture2D t2d;
+        public float _progress { get; private set; } //下载进度
+        public bool _isDone { get; private set; } //是否下载完成
+        public Action<object, DownloadProgressChangedEventArgs> _onProgressChanged;
+        public Action<object, AsyncCompletedEventArgs> _onFileComplete;
 
-        public MyThread(string url, string filePath)
+        public MyThread(string url, string filePath, Action<object, DownloadProgressChangedEventArgs> progress, Action<object, AsyncCompletedEventArgs> complete)
         {
             _url = url;
             _filePath = filePath;
+            _onProgressChanged = progress;
+            _onFileComplete = complete;
         }
 
         public void DownLoadImage()
         {
+            // 按 UrlList 的顺序
             if (!File.Exists(_filePath))
             {
-                WebClient web = new WebClient();
-                web.DownloadFile(_url, _filePath);
+                WebClient webClient = new WebClient();
+
+                //同步
+                webClient.DownloadFile(_url, _filePath);
+
+                //异步，处理回调
+                //webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(_onProgressChanged);
+                //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(_onFileComplete);
+                //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnCompleted);
+                //Uri _uri = new Uri(_url);
+                //webClient.DownloadFileAsync(_uri, _filePath);
             }
 
-            // 本地加载
-            ResManager.instance.bytesList.Add(SaveBytes(_filePath));
+            FileStream fs = new FileStream(_filePath, FileMode.OpenOrCreate);
+            byte[] bytes = new byte[(int)fs.Length];
+            int read = fs.Read(bytes, 0, bytes.Length);
+            fs.Dispose();
+            fs.Close();
+
+            //string hash = GetMD5Hash(bytes);
+            //Debug.Log(_filePath + " | " + hash);
+            //ResManager.instance.bytesDictionary.Add(hash, bytes);
+
+            ResManager.instance.bytesList.Add(bytes);
+            Debug.Log("流写入本地:" + bytes.Length);
         }
 
-        public byte[] SaveBytes(string filepath)
+        /*
+        void OnCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            using (FileStream fs = new FileStream(filepath, FileMode.Open))
+            Debug.Log("线程中完成");
+            
+            FileStream fs = new FileStream(_filePath, FileMode.OpenOrCreate);
+            byte[] bytes = new byte[(int)fs.Length];
+            int read = fs.Read(bytes, 0, bytes.Length);
+            fs.Dispose();
+            fs.Close();
+
+            string hash = GetMD5Hash(bytes);
+            //Debug.Log(_filePath + " | " + hash);
+            //ResManager.instance.bytesDictionary.Add(hash, bytes);
+
+            ResManager.instance.bytesList.Add(bytes);
+            Debug.Log("流写入本地:" + bytes.Length);
+        }
+        */
+
+        // 流计算MD5值
+        private static string GetMD5Hash(byte[] bytedata)
+        {
+            try
             {
-                byte[] bytes = new byte[(int)fs.Length];
-                int read = fs.Read(bytes, 0, bytes.Length);
+                System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+                byte[] retVal = md5.ComputeHash(bytedata);
 
-                fs.Dispose();
-                fs.Close();
-
-                return bytes;
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < retVal.Length; i++)
+                {
+                    sb.Append(retVal[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetMD5Hash() fail,error:" + ex.Message);
             }
         }
     }
