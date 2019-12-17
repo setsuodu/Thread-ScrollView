@@ -23,9 +23,7 @@ namespace SuperScrollView
         public List<Sprite> spriteList = new List<Sprite>();
 
         public List<byte[]> bytesList = new List<byte[]>();
-        //public Dictionary<string, byte[]> bytesDictionary = new Dictionary<string, byte[]>();
 
-        Thread thread;
         private string outputFolder
         {
             get
@@ -44,10 +42,9 @@ namespace SuperScrollView
         {
             if (bytesList.Count > 0)
             {
-                Texture2D t2d = new Texture2D(128, 128);
-
                 Debug.Log(bytesList.Count + "|" + bytesList[0].Length);
 
+                Texture2D t2d = new Texture2D(128, 128);
                 t2d.LoadImage(bytesList[0]);
                 t2d.Apply();
 
@@ -104,8 +101,6 @@ namespace SuperScrollView
             return ret;
         }
 
-        // Example
-
         public string GetSpriteNameByIndex(int index)
         {
             if (index < 0 || index >= urlList.Count)
@@ -149,33 +144,10 @@ namespace SuperScrollView
         {
             Debug.Log("主线程完成");
         }
-        
-        public void LoadImage(string hash)
-        {
-            Debug.Log("LoadImage > " + hash);
-
-            /*
-            if (bytesList.Count > 0)
-            {
-                Texture2D t2d = new Texture2D(128, 128);
-
-                Debug.Log(bytesList.Count + "|" + bytesList[0].Length);
-
-                t2d.LoadImage(bytesList[0]);
-                t2d.Apply();
-
-                Sprite sp = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
-                spriteList.Add(sp);
-
-                bytesList.RemoveAt(0);
-            }
-            */
-        }
 
         // 获取下载文件的大小
         public static long GetLength(string url)
         {
-            //HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
             HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
             request.Method = "HEAD";
 
@@ -219,16 +191,7 @@ namespace SuperScrollView
             if (!File.Exists(_filePath))
             {
                 WebClient webClient = new WebClient();
-
-                //同步
                 webClient.DownloadFile(_url, _filePath);
-
-                //异步，处理回调
-                //webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(_onProgressChanged);
-                //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(_onFileComplete);
-                //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnCompleted);
-                //Uri _uri = new Uri(_url);
-                //webClient.DownloadFileAsync(_uri, _filePath);
             }
 
             FileStream fs = new FileStream(_filePath, FileMode.OpenOrCreate);
@@ -237,33 +200,9 @@ namespace SuperScrollView
             fs.Dispose();
             fs.Close();
 
-            //string hash = GetMD5Hash(bytes);
-            //Debug.Log(_filePath + " | " + hash);
-            //ResManager.instance.bytesDictionary.Add(hash, bytes);
-
             ResManager.instance.bytesList.Add(bytes);
             Debug.Log("流写入本地:" + bytes.Length);
         }
-
-        /*
-        void OnCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            Debug.Log("线程中完成");
-            
-            FileStream fs = new FileStream(_filePath, FileMode.OpenOrCreate);
-            byte[] bytes = new byte[(int)fs.Length];
-            int read = fs.Read(bytes, 0, bytes.Length);
-            fs.Dispose();
-            fs.Close();
-
-            string hash = GetMD5Hash(bytes);
-            //Debug.Log(_filePath + " | " + hash);
-            //ResManager.instance.bytesDictionary.Add(hash, bytes);
-
-            ResManager.instance.bytesList.Add(bytes);
-            Debug.Log("流写入本地:" + bytes.Length);
-        }
-        */
 
         // 流计算MD5值
         private static string GetMD5Hash(byte[] bytedata)
