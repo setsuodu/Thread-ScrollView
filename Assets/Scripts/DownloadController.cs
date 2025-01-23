@@ -5,29 +5,32 @@ using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.ComponentModel;
-using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEngine.UI;
+using PimDeWitte.UnityMainThreadDispatcher;
 
 public class DownloadController : MonoBehaviour
 {
     private const string SAMEPLE_IMAGE_URL = "https://k.sinaimg.cn/n/sports/transform/180/w640h340/20250113/4877-d887f7373f49677ec3a2505750441f61.jpg/w640h340z1l0t0q75a7d.jpg";
 
-    [SerializeField] Button m_startButton;
+    [SerializeField] Button m_StartBtn;
+    [SerializeField] RawImage m_Image;
     [SerializeField] string fileName;
     [SerializeField] string filePath;
     Thread thread;
+    public static Action OnLoadImage;
 
     void Awake()
     {
-        m_startButton.onClick.AddListener(OnDownload);
+        m_StartBtn.onClick.AddListener(OnDownload);
+        OnLoadImage += LoadImage;
     }
 
     void OnDestroy()
     {
         thread?.Abort();
 
-        m_startButton.onClick.RemoveListener(OnDownload);
+        m_StartBtn.onClick.RemoveListener(OnDownload);
     }
 
     void Start()
@@ -55,6 +58,22 @@ public class DownloadController : MonoBehaviour
     {
         string log = string.Format("主线程接收回调 OnCompleted " + e.UserState);
         Debug.Log(log);
+
+        // 这里是线程里，需要到主线程中更新UI
+        UnityMainThreadDispatcher.Instance().Enqueue(() => {
+            // UI更新代码
+            DownloadController.OnLoadImage();
+        });
+    }
+
+    public void LoadImage()
+    {
+        byte[] fileData = System.IO.File.ReadAllBytes(filePath);
+        Debug.Log($"image fileData = {fileData.Length}");
+        // 创建Texture2D对象
+        Texture2D texture = new Texture2D(2, 2);
+        texture.LoadImage(fileData);
+        m_Image.texture = texture;
     }
 
     // 获取下载文件的大小，确保数据完整性
@@ -104,6 +123,14 @@ public class MyThread
             //webClient.DownloadFile(_url, _filePath); //同步
             Uri _uri = new Uri(_url);
             webClient.DownloadFileAsync(_uri, _filePath); //异步
+        }
+        else
+        {
+            // 这里是线程里，需要到主线程中更新UI
+            UnityMainThreadDispatcher.Instance().Enqueue(() => {
+                // UI更新代码
+                DownloadController.OnLoadImage();
+            });
         }
     }
 

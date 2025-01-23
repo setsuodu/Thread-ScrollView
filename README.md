@@ -1,6 +1,7 @@
 # Thread-ScrollView
 
 uGUI ScrollView实现上拉刷新，下拉加载效果。使用多线程下载远程图片，下载过程中，UI运动保持平滑。
+演示图片来自 https://github.com/Superviral/Pokemon-GO-App-Assets-and-Images.git
 
 ## 说明
 

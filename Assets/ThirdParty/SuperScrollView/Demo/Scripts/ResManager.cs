@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.ComponentModel;
-using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
@@ -72,8 +71,8 @@ namespace SuperScrollView
             spriteObjDict.Clear();
 
             string baseUrl = @"https://download.setsuodu.com/Pokemon Models/";
-            DownloadList downloadList = Resources.Load<DownloadList>("DownloadList");
-            //Debug.Log(downloadList.list.Count);
+            var downloadList = Resources.Load<DownloadList>("DownloadList");
+            Debug.Log($"image count = {downloadList.list.Count}");
             for (int i = 0; i < downloadList.list.Count; i++)
             {
                 string fileurl = baseUrl + downloadList.list[i].filename;
@@ -161,8 +160,7 @@ namespace SuperScrollView
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
             return response.ContentLength;
         }
-
-        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
             return true; //总是接受
         }

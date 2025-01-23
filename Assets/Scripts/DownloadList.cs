@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Net;
 using System.Net.Security;
-using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
@@ -24,15 +23,6 @@ public class DownloadList : ScriptableObject
 
             list = JsonConvert.DeserializeObject<List<Content>>(json);
             Debug.Log(list.Count);
-
-            //list = new List<Content>();
-
-            //for (int i = 0; i < jd.Count; i++)
-            //{
-            //    Content content = new Content();
-            //    content.filename = jd[i].ToString();
-            //    list.Add(content);
-            //}
         }
     }
 
@@ -53,7 +43,7 @@ public class DownloadList : ScriptableObject
 
     static string Get()
     {
-        string result = "";
+        string result = string.Empty;
         string url = "https://download.setsuodu.com/PokemonModels.php";
 
         //HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
