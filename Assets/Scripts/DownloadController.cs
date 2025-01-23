@@ -5,18 +5,13 @@ using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.ComponentModel;
-using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DownloadController : MonoBehaviour
 {
-    public static DownloadController instance;
-
-    //private const string url = "http://www.manew.com/template/manew2016/images/logo.png";
-    private const string url = "https://download.setsuodu.com/face3.jpg";
+    private const string SAMEPLE_IMAGE_URL = "https://k.sinaimg.cn/n/sports/transform/180/w640h340/20250113/4877-d887f7373f49677ec3a2505750441f61.jpg/w640h340z1l0t0q75a7d.jpg";
 
     [SerializeField] Button m_startButton;
     [SerializeField] string fileName;
@@ -25,34 +20,26 @@ public class DownloadController : MonoBehaviour
 
     void Awake()
     {
-        instance = this;
-
         m_startButton.onClick.AddListener(OnDownload);
     }
 
     void OnDestroy()
     {
-        thread.Abort();
+        thread?.Abort();
 
         m_startButton.onClick.RemoveListener(OnDownload);
     }
 
     void Start()
     {
-        fileName = url.Split('/')[url.Split('/').Length - 1];
+        fileName = SAMEPLE_IMAGE_URL.Split('/')[SAMEPLE_IMAGE_URL.Split('/').Length - 1];
         filePath = Application.persistentDataPath + "/" + fileName;
-
-        Debug.Log(GetLength(url));
-    }
-
-    void Update()
-    {
-
+        Debug.Log($"file size: {GetLength(SAMEPLE_IMAGE_URL)} byte");
     }
 
     void OnDownload()
     {
-        MyThread mt = new MyThread(url, filePath, OnProgressChanged, OnCompleted);
+        MyThread mt = new MyThread(SAMEPLE_IMAGE_URL, filePath, OnProgressChanged, OnCompleted);
         thread = new Thread(new ThreadStart(mt.DownLoadImage));
         thread.Start();
         Debug.Log("saved in: " + filePath);
@@ -60,7 +47,7 @@ public class DownloadController : MonoBehaviour
 
     void OnProgressChanged(object sender, DownloadProgressChangedEventArgs e)
     {
-        string progress = string.Format("正在下载文件，完成进度{0}%  {1}/{2}(字节)", e.ProgressPercentage, e.BytesReceived, e.TotalBytesToReceive);
+        string progress = string.Format("正在下载文件，完成进度{0}%  {1}/{2}(byte)", e.ProgressPercentage, e.BytesReceived, e.TotalBytesToReceive);
         Debug.Log(progress);
     }
 
@@ -70,29 +57,22 @@ public class DownloadController : MonoBehaviour
         Debug.Log(log);
     }
 
-    // 获取下载文件的大小
-    public static long GetLength(string url)
+    // 获取下载文件的大小，确保数据完整性
+    static long GetLength(string url)
     {
+        HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+        request.Method = "HEAD";
         Debug.Log(url);
 
-        //HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-        HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
-        request.Method = "HEAD";
-
-        //如果是发送HTTPS请求
         if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
         {
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+            ServicePointManager.ServerCertificateValidationCallback = 
+                new RemoteCertificateValidationCallback((sender, certificate, chain, errors) => { return true; });
             request.ProtocolVersion = HttpVersion.Version10;
         }
 
-        HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
         return response.ContentLength;
-    }
-
-    private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
-    {
-        return true; //总是接受
     }
 }
 

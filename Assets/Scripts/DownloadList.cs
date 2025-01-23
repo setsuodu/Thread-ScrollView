@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEditor;
-using LitJson;
+using Newtonsoft.Json;
 
 public class DownloadList : ScriptableObject
 {
@@ -22,17 +22,17 @@ public class DownloadList : ScriptableObject
             string json = Get();
             Debug.Log(json);
 
-            JsonData jd = JsonMapper.ToObject(json);
-            Debug.Log(jd.Count);
+            list = JsonConvert.DeserializeObject<List<Content>>(json);
+            Debug.Log(list.Count);
 
-            list = new List<Content>();
+            //list = new List<Content>();
 
-            for (int i = 0; i < jd.Count; i++)
-            {
-                Content content = new Content();
-                content.filename = jd[i].ToString();
-                list.Add(content);
-            }
+            //for (int i = 0; i < jd.Count; i++)
+            //{
+            //    Content content = new Content();
+            //    content.filename = jd[i].ToString();
+            //    list.Add(content);
+            //}
         }
     }
 
