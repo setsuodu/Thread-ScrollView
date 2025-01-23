@@ -23,14 +23,6 @@ namespace SuperScrollView
 
         public List<byte[]> bytesList = new List<byte[]>();
 
-        private string outputFolder
-        {
-            get
-            {
-                return "C:/Users/user/Desktop/";
-            }
-        }
-
         void Awake()
         {
             instance = null;
@@ -41,8 +33,6 @@ namespace SuperScrollView
         {
             if (bytesList.Count > 0)
             {
-                Debug.Log(bytesList.Count + "|" + bytesList[0].Length);
-
                 Texture2D t2d = new Texture2D(128, 128);
                 t2d.LoadImage(bytesList[0]);
                 t2d.Apply();
@@ -70,7 +60,7 @@ namespace SuperScrollView
         {
             spriteObjDict.Clear();
 
-            string baseUrl = @"https://download.setsuodu.com/Pokemon Models/";
+            string baseUrl = @"http://localhost/Pokedex/";
             var downloadList = Resources.Load<DownloadList>("DownloadList");
             Debug.Log($"image count = {downloadList.list.Count}");
             for (int i = 0; i < downloadList.list.Count; i++)
@@ -121,7 +111,7 @@ namespace SuperScrollView
             //Debug.Log(fileSize);
 
             string[] filename = url.Split('/');
-            string filepath = Path.Combine(outputFolder, filename[filename.Length - 1]);
+            string filepath = Path.Combine(Application.persistentDataPath, filename[filename.Length - 1]);
             pathList.Add(filepath);
 
             //Debug.Log(url + "\n" + pathList[index]);
@@ -199,7 +189,7 @@ namespace SuperScrollView
             fs.Close();
 
             ResManager.instance.bytesList.Add(bytes);
-            Debug.Log("流写入本地:" + bytes.Length);
+            Debug.Log($"文件流写入本地: {bytes.Length}");
         }
 
         // 流计算MD5值
